@@ -351,9 +351,8 @@ def main() -> None:
             latest_utc = latest.astimezone(timezone.utc)
 
         next_from = latest_utc + timedelta(minutes=1)
-        print(
-            f"Loaded batch rows={len(records)}. max_timestamp={latest_utc.strftime('%Y-%m-%d %H:%M:%S')} UTC"
-        )
+        latest_uploaded = max(r["timestamp"] for r in records)
+        print(latest_uploaded.strftime("%Y-%m-%d %H:%M:%S UTC"))
 
         if next_from <= fetch_from:
             break
