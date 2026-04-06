@@ -14,9 +14,8 @@ name: Sync OANDA M1 candles
 
 on:
   schedule:
-    # 00:00 UTC Wed–Sat = Tue–Fri 5:00 PM Pacific during PDT (UTC−7). GitHub has no TZ in cron;
-    # during PST (UTC−8) this fires at 4:00 PM Pacific — set hour to 1 for 5 PM in winter instead.
-    - cron: "0 0 * * 3-6"
+    # Runs every Monday at 1:00 AM UTC.
+    - cron: "0 1 * * 1"
   workflow_dispatch:
 
 permissions:
