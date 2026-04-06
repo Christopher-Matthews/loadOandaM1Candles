@@ -1,0 +1,54 @@
+# OANDA M1 candles → BigQuery sync
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   GCP_SA_JSON          Full JSON of a GCP service account key with BigQuery
+#                        permissions on project bold-artifact-312304 (Job User,
+#                        Data Editor on dataset oanda, or broader roles).
+#   OANDA_ACCESS_TOKEN   OANDA personal access token
+#   OANDA_ACCOUNT_ID     OANDA account ID (e.g. 001-001-…)
+#
+# Optional secret (omit to use live API default in the script):
+#   OANDA_API_BASE       e.g. https://api-fxpractice.oanda.com
+#
+name: Sync OANDA M1 candles
+
+on:
+  schedule:
+    # 00:00 UTC Wed–Sat = Tue–Fri 5:00 PM Pacific during PDT (UTC−7). GitHub has no TZ in cron;
+    # during PST (UTC−8) this fires at 4:00 PM Pacific — set hour to 1 for 5 PM in winter instead.
+    - cron: "0 0 * * 3-6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oanda-bq-m1-candles-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write BigQuery service account key
+        env:
+          GCP_SA_JSON: ${{ secrets.GCP_SA_JSON }}
+        run: printf '%s' "$GCP_SA_JSON" > ba.json
+
+      - name: Run load_oanda_candles
+        env:
+          OANDA_ACCESS_TOKEN: ${{ secrets.OANDA_ACCESS_TOKEN }}
+          OANDA_ACCOUNT_ID: ${{ secrets.OANDA_ACCOUNT_ID }}
+          OANDA_API_BASE: ${{ secrets.OANDA_API_BASE }}
+        run: python load_oanda_candles.py

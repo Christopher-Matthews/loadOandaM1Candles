@@ -1,0 +1,4 @@
+# Python 3.10+ recommended. No pandas/numpy/pyarrow — avoids macOS blocking compiled wheels.
+google-cloud-bigquery>=3.14.0
+python-dotenv>=1.0.0
+requests>=2.31.0
